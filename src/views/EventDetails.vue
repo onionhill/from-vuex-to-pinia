@@ -3,11 +3,11 @@ import { useEventStore } from '../stores/EventStore'
 export default {
   props: ['id'],
   setup(){
-    const evetStore = useEventStore();
-    return { evetStore };
+    const eventStore = useEventStore();
+    return { eventStore };
   },
   created() {
-    this.evetStore.fetchEvent(this.id).catch(error => {
+    this.eventStore.fetchEvent(this.id).catch(error => {
       this.$router.push({
         name: 'ErrorDisplay',
         params: { error: error }
@@ -16,7 +16,7 @@ export default {
   },
   computed: {
     event() {
-      return this.evetStore.event
+      return this.eventStore.event
     }
   }
 }
