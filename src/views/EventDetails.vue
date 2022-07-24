@@ -1,109 +1,35 @@
 <script>
-import { v4 as uuidv4 } from 'uuid'
 import { useEventStore } from '../stores/EventStore'
-import { useUserStore } from '../stores/UserStore'
 
 export default {
+  props: ['id'],
   setup() {
     const eventStore = useEventStore()
-    const userStore = useUserStore()
 
     return {
-      eventStore,
-      userStore
+      eventStore
     }
   },
-  data() {
-    return {
-      categories: [
-        'sustainability',
-        'nature',
-        'animal welfare',
-        'housing',
-        'education',
-        'food',
-        'community'
-      ],
-      event: {
-        id: '',
-        category: '',
-        title: '',
-        description: '',
-        location: '',
-        date: '',
-        time: '',
-        organizer: ''
-      }
-    }
+  created() {
+    this.eventStore.fetchEvent(this.id).catch(error => {
+      this.$router.push({
+        name: 'ErrorDisplay',
+        params: { error: error }
+      })
+    })
   },
-  methods: {
-    onSubmit() {
-      const event = {
-        ...this.event,
-        id: uuidv4(),
-        organizer: this.userStore.user
-      }
-      this.eventStore
-        .createEvent(event)
-        .then(() => {
-          this.$router.push({
-            name: 'EventDetails',
-            params: { id: event.id }
-          })
-        })
-        .catch(error => {
-          this.$router.push({
-            name: 'ErrorDisplay',
-            params: { error: error }
-          })
-        })
+  computed: {
+    event() {
+      return this.eventStore.event
     }
   }
 }
 </script>
 
 <template>
-  <h1>Create an event</h1>
-
-  <div class="form-container">
-    <form @submit.prevent="onSubmit">
-      <label>Select a category: </label>
-      <select v-model="event.category">
-        <option
-          v-for="option in categories"
-          :value="option"
-          :key="option"
-          :selected="option === event.category"
-        >
-          {{ option }}
-        </option>
-      </select>
-
-      <h3>Name & describe your event</h3>
-
-      <label>Title</label>
-      <input v-model="event.title" type="text" placeholder="Title" />
-
-      <label>Description</label>
-      <input
-        v-model="event.description"
-        type="text"
-        placeholder="Description"
-      />
-
-      <h3>Where is your event?</h3>
-
-      <label>Location</label>
-      <input v-model="event.location" type="text" placeholder="Location" />
-
-      <h3>When is your event?</h3>
-      <label>Date</label>
-      <input v-model="event.date" type="text" placeholder="Date" />
-
-      <label>Time</label>
-      <input v-model="event.time" type="text" placeholder="Time" />
-
-      <button type="submit">Submit</button>
-    </form>
+  <div v-if="event">
+    <h1>{{ event.title }}</h1>
+    <p>{{ event.time }} on {{ event.date }} @ {{ event.location }}</p>
+    <p>{{ event.description }}</p>
   </div>
 </template>
